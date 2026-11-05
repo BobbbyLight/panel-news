@@ -1,0 +1,159 @@
+# Fixed 15-outlet comparison panel.
+#
+# Each outlet has an ordered list of `sources`. The ingest script uses the first
+# source that returns recent items and falls back to the next one otherwise, so
+# a dead feed degrades gracefully instead of emptying a slot.
+#
+# Source types:
+#   rss      - a normal RSS/Atom feed (parsed with feedparser)
+#   sitemap  - a Google-News-style XML sitemap (<news:title>, <news:publication_date>)
+#              used for outlets that dropped public RSS but still publish one
+#   gnews    - Google News RSS search restricted to the outlet's domain.
+#              Last resort: links are news.google.com redirects and there is no
+#              summary, so Read mode has to resolve the redirect first.
+#
+# Optional `exclude_title` is a regex; matching items are dropped at ingest.
+#
+# `slot` is the outlet's fixed position (0-4) inside its lean group; the
+# frontend uses lean + slot to draw the 15-cell coverage bar.
+
+panel:
+  # ---------------- Left ----------------
+  - id: guardian
+    name: The Guardian
+    lean: left
+    slot: 0
+    domain: theguardian.com
+    sources:
+      - {type: rss, url: "https://www.theguardian.com/us-news/rss"}
+      - {type: rss, url: "https://www.theguardian.com/world/rss"}
+
+  - id: msnow
+    name: MS NOW
+    lean: left
+    slot: 1
+    domain: ms.now
+    sources:
+      - {type: rss, url: "https://www.ms.now/feed"}
+      - {type: rss, url: "https://www.ms.now/rss"}
+      - {type: sitemap, url: "https://www.ms.now/news-sitemap.xml"}
+      - {type: gnews, query: "site:ms.now"}
+
+  - id: huffpost
+    name: HuffPost
+    lean: left
+    slot: 2
+    domain: huffpost.com
+    sources:
+      # front-page feed failed the step-1 check; politics is the better fit anyway
+      - {type: rss, url: "https://www.huffpost.com/section/politics/feed"}
+      - {type: rss, url: "https://www.huffpost.com/section/us-news/feed"}
+
+  - id: vox
+    name: Vox
+    lean: left
+    slot: 3
+    domain: vox.com
+    sources:
+      - {type: rss, url: "https://www.vox.com/rss/index.xml"}
+
+  - id: thenation
+    name: The Nation
+    lean: left
+    slot: 4
+    domain: thenation.com
+    sources:
+      - {type: rss, url: "https://www.thenation.com/feed/?post_type=article"}
+
+  # ---------------- Neutral ----------------
+  - id: ap
+    name: AP
+    lean: neutral
+    slot: 0
+    domain: apnews.com
+    sources:
+      - {type: sitemap, url: "https://apnews.com/news-sitemap-content.xml"}
+      - {type: gnews, query: "site:apnews.com"}
+
+  - id: reuters
+    name: Reuters
+    lean: neutral
+    slot: 1
+    domain: reuters.com
+    sources:
+      - {type: sitemap, url: "https://www.reuters.com/arc/outboundfeeds/news-sitemap/?outputType=xml"}
+      - {type: gnews, query: "site:reuters.com"}
+
+  - id: bbc
+    name: BBC News
+    lean: neutral
+    slot: 2
+    domain: bbc.co.uk
+    sources:
+      - {type: rss, url: "https://feeds.bbci.co.uk/news/rss.xml"}
+      - {type: rss, url: "https://feeds.bbci.co.uk/news/world/rss.xml"}
+
+  - id: npr
+    name: NPR
+    lean: neutral
+    slot: 3
+    domain: npr.org
+    sources:
+      - {type: rss, url: "https://feeds.npr.org/1001/rss.xml"}
+
+  - id: thehill
+    name: The Hill
+    lean: neutral
+    slot: 4
+    domain: thehill.com
+    sources:
+      - {type: rss, url: "https://thehill.com/feed/"}
+      - {type: rss, url: "https://thehill.com/homenews/feed/"}
+
+  # ---------------- Right ----------------
+  - id: fox
+    name: Fox News
+    lean: right
+    slot: 0
+    domain: foxnews.com
+    sources:
+      - {type: rss, url: "https://moxie.foxnews.com/google-publisher/latest.xml"}
+      - {type: rss, url: "https://moxie.foxnews.com/google-publisher/politics.xml"}
+
+  - id: dailywire
+    name: The Daily Wire
+    lean: right
+    slot: 1
+    domain: dailywire.com
+    sources:
+      - {type: rss, url: "https://www.dailywire.com/feeds/rss.xml"}
+      - {type: gnews, query: "site:dailywire.com"}
+
+  - id: washexaminer
+    name: Washington Examiner
+    lean: right
+    slot: 2
+    domain: washingtonexaminer.com
+    sources:
+      - {type: rss, url: "https://www.washingtonexaminer.com/feed/"}
+      - {type: rss, url: "https://www.washingtonexaminer.com/tag/news.rss"}
+      - {type: gnews, query: "site:washingtonexaminer.com"}
+
+  - id: nypost
+    name: New York Post
+    lean: right
+    slot: 3
+    domain: nypost.com
+    # The feed carries sportsbook/shopping affiliate posts.
+    exclude_title: "(?i)promo code|bonus code|sportsbook|betting offer|\\bbest\\b.*\\bdeals\\b"
+    sources:
+      - {type: rss, url: "https://nypost.com/feed/"}
+      - {type: rss, url: "https://nypost.com/news/feed/"}
+
+  - id: federalist
+    name: The Federalist
+    lean: right
+    slot: 4
+    domain: thefederalist.com
+    sources:
+      - {type: rss, url: "https://thefederalist.com/feed/"}
