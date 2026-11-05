@@ -154,6 +154,7 @@ def build_stories(pool: list[dict], panel: list[dict], prev_stories: dict | None
         stories.append({
             "id": sid,
             "title": pool[head_i]["title"],
+            "lead": pool[head_i]["outlet"],
             "first_seen": first_seen,
             "updated": datetime.fromtimestamp(times[-1], timezone.utc).isoformat(timespec="seconds"),
             "score": round(score, 3),
