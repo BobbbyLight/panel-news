@@ -1,0 +1,194 @@
+/* ==========================================================================
+   Theme tokens (shared engine with adhdtimeline; lean + highlight tokens added)
+   Three independent axes, applied as attributes on <html>:
+     data-theme  = vaporwave-bold | vaporwave-soft | dark-gray | oled |
+                   dark-blue | light-neutral
+     data-flair  = subtle | max
+     data-reduce-motion = true   (hard kill switch, wins over everything)
+   All component CSS reads only the custom properties below — never a
+   hardcoded color — so new palettes can be added here without touching
+   any other file.
+   ========================================================================== */
+
+:root {
+  /* Non-color tokens shared by every theme */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --font-ui: "Atkinson Hyperlegible", system-ui, sans-serif;
+  --line-height-base: 1.5;
+  --letter-spacing-base: 0;
+  --shadow-elevation: 0 8px 24px rgba(0, 0, 0, 0.28);
+  --motion-fast: 150ms;
+  --motion-med: 400ms;
+  --motion-slow: 900ms;
+  --ease-standard: cubic-bezier(0.2, 0.7, 0.3, 1);
+
+  /* Fallback palette (Light Neutral) so an unthemed flash never shows
+     unstyled/black content before theming.js applies data-theme. */
+  --bg: #f7f7f5;
+  --bg-elevated: #ffffff;
+  --bg-elevated-2: #eeeeec;
+  --text-primary: #26262a;
+  --text-secondary: #55555c;
+  --text-muted: #8a8a90;
+  --accent-1: #3d7cf4;
+  --accent-2: #ff7a59;
+  --accent-3: #2ec4a6;
+  --border: #dcdcd8;
+  --focus-ring: #3d7cf4;
+  --success: #2ec4a6;
+  --critical: #e6392e;
+  --lean-left: #2f6fe0;
+  --lean-neutral: #7a7a82;
+  --lean-right: #d9712b;
+}
+
+/* ---- Vaporwave Bold: hot pink / cyan / purple, near-black base ---- */
+:root[data-theme="vaporwave-bold"] {
+  --lean-left: #2ee6ff;
+  --lean-neutral: #c9b3e0;
+  --lean-right: #ff9f3d;
+  --bg: #0d0716;
+  --bg-elevated: #170b26;
+  --bg-elevated-2: #221136;
+  --text-primary: #f5eaff;
+  --text-secondary: #c9b3e0;
+  --text-muted: #8f7aa8;
+  --accent-1: #ff2fb6;
+  --accent-2: #2ee6ff;
+  --accent-3: #a259ff;
+  --border: #3a1f52;
+  --focus-ring: #2ee6ff;
+  --success: #4be3a0;
+  --critical: #ff3b5c;
+  --shadow-elevation: 0 8px 28px rgba(255, 47, 182, 0.18);
+}
+
+/* ---- Vaporwave Soft: dusty lavender / peach / mint ---- */
+:root[data-theme="vaporwave-soft"] {
+  --lean-left: #7fb3e6;
+  --lean-neutral: #b0a2bf;
+  --lean-right: #e79a6e;
+  --bg: #f7f0fa;
+  --bg-elevated: #ffffff;
+  --bg-elevated-2: #f0e2f5;
+  --text-primary: #4a3b5c;
+  --text-secondary: #6f5d82;
+  --text-muted: #9a8bab;
+  --accent-1: #d8a7d0;
+  --accent-2: #f7c9a8;
+  --accent-3: #a8e0c8;
+  --border: #e3d5ea;
+  --focus-ring: #b784c9;
+  --success: #6bc9a0;
+  --critical: #e0556b;
+}
+
+/* ---- Dark Gray (default dark mode) ---- */
+:root[data-theme="dark-gray"] {
+  --lean-left: #7c9eff;
+  --lean-neutral: #b8b8bd;
+  --lean-right: #e0a75e;
+  --bg: #1c1c1e;
+  --bg-elevated: #262628;
+  --bg-elevated-2: #323234;
+  --text-primary: #f0f0f2;
+  --text-secondary: #b8b8bd;
+  --text-muted: #83838a;
+  --accent-1: #7c9eff;
+  --accent-2: #64d9c4;
+  --accent-3: #c792ea;
+  --border: #3a3a3d;
+  --focus-ring: #7c9eff;
+  --success: #64d9a0;
+  --critical: #ff5c5c;
+}
+
+/* ---- Black OLED ---- */
+:root[data-theme="oled"] {
+  --lean-left: #00e5ff;
+  --lean-neutral: #d0d0d0;
+  --lean-right: #ffb347;
+  --bg: #000000;
+  --bg-elevated: #0a0a0a;
+  --bg-elevated-2: #161616;
+  --text-primary: #f5f5f5;
+  --text-secondary: #b0b0b0;
+  --text-muted: #707070;
+  --accent-1: #00e5ff;
+  --accent-2: #ff4fa3;
+  --accent-3: #ffd166;
+  --border: #232323;
+  --focus-ring: #00e5ff;
+  --success: #4be39a;
+  --critical: #ff4d4d;
+  --shadow-elevation: 0 8px 28px rgba(0, 229, 255, 0.12);
+}
+
+/* ---- Dark Blue: deep navy/indigo base, bright cyan/electric-blue accent ---- */
+:root[data-theme="dark-blue"] {
+  --lean-left: #4d9dff;
+  --lean-neutral: #a9b4d6;
+  --lean-right: #ffb86b;
+  --bg: #0a1128;
+  --bg-elevated: #101a3d;
+  --bg-elevated-2: #172452;
+  --text-primary: #e8ecfb;
+  --text-secondary: #a9b4d6;
+  --text-muted: #6f7aa3;
+  --accent-1: #00d4ff;
+  --accent-2: #4d7cff;
+  --accent-3: #7ee8ff;
+  --border: #22306b;
+  --focus-ring: #00d4ff;
+  --success: #57d9b0;
+  --critical: #ff5470;
+  --shadow-elevation: 0 8px 28px rgba(0, 212, 255, 0.16);
+}
+
+/* ---- Light Neutral (default light mode) ---- */
+:root[data-theme="light-neutral"] {
+  --lean-left: #2f6fe0;
+  --lean-neutral: #7a7a82;
+  --lean-right: #d9712b;
+  --bg: #f7f7f5;
+  --bg-elevated: #ffffff;
+  --bg-elevated-2: #eeeeec;
+  --text-primary: #26262a;
+  --text-secondary: #55555c;
+  --text-muted: #8a8a90;
+  --accent-1: #3d7cf4;
+  --accent-2: #ff7a59;
+  --accent-3: #2ec4a6;
+  --border: #dcdcd8;
+  --focus-ring: #3d7cf4;
+  --success: #2ec4a6;
+  --critical: #e6392e;
+}
+
+
+/* Derived tokens */
+:root {
+  --loaded-bg: color-mix(in srgb, var(--accent-3) 26%, transparent);
+  --loaded-line: var(--accent-2);
+  --unread-dot: var(--accent-1);
+  --tap-min: 48px;
+}
+
+/* ---- Reduce motion: true kill switch, wins over flair and palette ---- */
+:root[data-reduce-motion="true"] * ,
+:root[data-reduce-motion="true"] *::before,
+:root[data-reduce-motion="true"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
