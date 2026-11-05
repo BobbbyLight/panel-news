@@ -12,6 +12,8 @@
 #              Last resort: links are news.google.com redirects and there is no
 #              summary, so Read mode has to resolve the redirect first.
 #
+# Optional `exclude_title` is a regex; matching items are dropped at ingest.
+#
 # `slot` is the outlet's fixed position (0-4) inside its lean group; the
 # frontend uses lean + slot to draw the 15-cell coverage bar.
 
@@ -43,8 +45,9 @@ panel:
     slot: 2
     domain: huffpost.com
     sources:
-      - {type: rss, url: "https://www.huffpost.com/section/front-page/feed"}
+      # front-page feed failed the step-1 check; politics is the better fit anyway
       - {type: rss, url: "https://www.huffpost.com/section/politics/feed"}
+      - {type: rss, url: "https://www.huffpost.com/section/us-news/feed"}
 
   - id: vox
     name: Vox
@@ -61,7 +64,6 @@ panel:
     domain: thenation.com
     sources:
       - {type: rss, url: "https://www.thenation.com/feed/?post_type=article"}
-      - {type: rss, url: "https://www.thenation.com/feed/"}
 
   # ---------------- Neutral ----------------
   - id: ap
@@ -142,6 +144,8 @@ panel:
     lean: right
     slot: 3
     domain: nypost.com
+    # The feed carries sportsbook/shopping affiliate posts.
+    exclude_title: "(?i)promo code|bonus code|sportsbook|betting offer|\\bbest\\b.*\\bdeals\\b"
     sources:
       - {type: rss, url: "https://nypost.com/feed/"}
       - {type: rss, url: "https://nypost.com/news/feed/"}

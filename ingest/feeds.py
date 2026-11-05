@@ -159,6 +159,10 @@ def fetch_source(outlet: dict, src: dict) -> SourceResult:
         res.error = f"{type(exc).__name__}: {exc}"[:200]
         return res
 
+    if outlet.get("exclude_title"):
+        pat = re.compile(outlet["exclude_title"])
+        arts = [a for a in arts if not pat.search(a.title)]
+
     now = time.time()
     arts.sort(key=lambda a: a.ts, reverse=True)
     res.articles = arts

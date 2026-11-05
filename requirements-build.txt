@@ -1,0 +1,9 @@
+# Hourly build (ingest + clustering). CPU-only torch keeps the install ~200 MB
+# instead of ~2.5 GB of CUDA wheels.
+-r requirements.txt
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.5.1+cpu
+sentence-transformers==3.3.1
+transformers==4.46.3
+scipy==1.14.1
+numpy==2.1.3
