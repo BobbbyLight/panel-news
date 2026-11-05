@@ -33,6 +33,7 @@ LEANS = ("left", "neutral", "right")
 # Preferred outlet for the story's display headline (plain wire copy first).
 HEADLINE_PREF = ["ap", "reuters", "bbc", "npr", "thehill"]
 SCHEMA = 1
+SINGLETON_HOURS = 18
 
 
 def _now_iso() -> str:
@@ -139,10 +140,13 @@ def build_stories(pool: list[dict], panel: list[dict], prev_stories: dict | None
         # Breadth across the panel dominates; recency decays over ~a day.
         score = n_out * (1 + 0.35 * (n_leans - 1)) * math.exp(-age_h / 20)
 
-        missing = [l for l in LEANS if coverage[l] == 0]
+        # Blindspot: one partisan side is silent while the story is clearly
+        # being covered elsewhere (>=4 outlets, >=2 on the opposite side).
+        # Value is the side that is NOT covering it.
         blindspot = None
-        if n_out >= 3 and len(missing) == 1 and missing[0] != "neutral":
-            blindspot = missing[0]  # side that is NOT covering it
+        for side, other in (("left", "right"), ("right", "left")):
+            if coverage[side] == 0 and n_out >= 4 and coverage[other] >= 2:
+                blindspot = side
 
         sid = _story_id([pool[i]["url"] for i in idx], prev_ids, taken)
         taken.add(sid)
@@ -161,6 +165,11 @@ def build_stories(pool: list[dict], panel: list[dict], prev_stories: dict | None
             "more": sorted((art(i, False) for i in more), key=lambda d: d["published"], reverse=True),
         })
 
+    # Single-outlet items are only worth keeping while fresh; this roughly
+    # halves stories.json without touching anything with real coverage.
+    stale = now - SINGLETON_HOURS * 3600
+    stories = [s for s in stories if s["outlet_count"] > 1
+               or datetime.fromisoformat(s["updated"]).timestamp() > stale]
     stories.sort(key=lambda s: s["score"], reverse=True)
     return stories
 
