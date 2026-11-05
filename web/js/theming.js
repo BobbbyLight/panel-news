@@ -28,6 +28,14 @@ const DEFAULTS = {
   letterSpacing: 0,
   view: "standard",
   diffHighlight: false,
+  // Read mode
+  readerSize: 20,
+  readerLeading: 1.7,
+  lineFocus: false,
+  boldFirst: false,
+  ttsRate: 1,
+  ttsVoice: "",
+  workerUrl: "",
 };
 
 const LS = "panelnews:";

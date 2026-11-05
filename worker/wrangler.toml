@@ -1,0 +1,9 @@
+# Cloudflare Worker for Read mode. Free plan is plenty (100k requests/day).
+name = "panel-news-reader"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+[vars]
+# Comma-separated origins allowed to call the Worker (your GitHub Pages origin).
+ALLOWED_ORIGINS = "https://bobbbylight.github.io"

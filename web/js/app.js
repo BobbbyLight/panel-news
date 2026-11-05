@@ -14,6 +14,7 @@ import { DB } from "./db.js";
 import { Theming, THEMES } from "./theming.js";
 import { Data, LEANS, LEAN_LABEL, loadStories, timeAgo } from "./data.js";
 import { markHeadline } from "./loaded.js";
+import { mount as mountReader, workerUrl } from "./reader.js";
 
 const TODAY_COUNT = 15;
 const VIEWS = [
@@ -264,21 +265,21 @@ function viewStory(id) {
 }
 
 function viewRead(id, outletId) {
-  // Placeholder until the Worker + Read mode land (step 4).
   const story = Data.story(id);
   const article = story?.articles.find((a) => a.outlet === outletId);
   if (!article) return notFound();
-  DB.markRead(id).then(() => readIds.add(id));
-  return h(
-    "section",
-    { class: "view view-read" },
-    h("a", { class: "back", href: `#/story/${id}`, onclick: backClick }, "‹ Back"),
-    h("p", { class: "read-outlet" }, outletName(outletId), " · ", timeAgo(article.published)),
-    h("h2", { class: "read-title" }, article.title),
-    article.summary ? h("p", { class: "read-summary" }, article.summary) : null,
-    h("a", { class: "btn btn-primary", href: article.url, target: "_blank", rel: "noopener noreferrer" }, "Open original ↗"),
-    h("a", { class: "btn", href: `#/story/${id}` }, `Compare ${story.outlet_count} outlets`)
-  );
+  const holder = h("div", { class: "read-holder" });
+  // Mount after the holder is in the DOM so scroll/focus maths work.
+  queueMicrotask(() => {
+    cleanup = mountReader(holder, {
+      story,
+      article,
+      outletName: outletName(outletId),
+      timeAgo,
+      onRead: () => DB.markRead(id).then(() => readIds.add(id)),
+    });
+  });
+  return holder;
 }
 
 function viewSettings() {
@@ -382,6 +383,22 @@ function viewSettings() {
       h("h3", {}, "Font"),
       seg("font", [["atkinson", "Atkinson Hyperlegible"], ["opendyslexic", "OpenDyslexic"]])
     ),
+    h(
+      "div",
+      { class: "set-section" },
+      h("h3", {}, "Read mode"),
+      h("p", { class: "muted small" }, "Cloudflare Worker that extracts article text. Not a secret: it only answers this site."),
+      h("input", {
+        class: "text-input",
+        type: "url",
+        inputmode: "url",
+        placeholder: "https://panel-news-reader.<you>.workers.dev",
+        value: s.workerUrl || "",
+        "aria-label": "Worker URL",
+        onchange: (e) => Theming.set("workerUrl", e.target.value.trim()),
+      }),
+      h("p", { class: "muted small" }, workerUrl() ? `Using ${workerUrl()}` : "Not set: articles open as summary + link.")
+    ),
     h("div", { class: "set-section" }, h("h3", {}, "Feeds"), health),
     h(
       "p",
@@ -432,7 +449,10 @@ function route() {
 }
 
 let lastKey = location.hash;
+let cleanup = null;
 function render({ animate = false } = {}) {
+  cleanup?.();
+  cleanup = null;
   const [tab, view] = route();
   document.querySelectorAll(".tab").forEach((t) => t.setAttribute("aria-current", String(t.dataset.tab === tab)));
   if (!Data.data && tab !== "settings") {

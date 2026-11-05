@@ -16,6 +16,7 @@ IndexedDB on your device.
 | `scripts/check_feeds.py` | per-outlet item counts (`--all` tests every fallback) |
 | `scripts/show_clusters.py` | prints clusters, or `--sweep` similarity thresholds |
 | `web/` | the PWA (vanilla JS modules, no build step) |
+| `worker/` | Cloudflare Worker for Read mode (Readability) |
 | `.github/workflows/build.yml` | hourly build + Pages deploy |
 
 ## Setup
@@ -25,8 +26,41 @@ IndexedDB on your device.
    Actions tab ("Build & deploy" → Run workflow).
 3. Open `https://<user>.github.io/panel-news/` on your phone and use "Add to Home Screen".
 
-Read mode (Cloudflare Worker) and pull-to-refresh (fine-grained PAT) setup are
-documented as those features land.
+Pull-to-refresh (fine-grained PAT) setup is documented when that feature lands.
+
+## Read mode Worker (Cloudflare, free plan)
+
+`worker/` fetches an article, runs Mozilla Readability, and returns clean
+structured JSON (no HTML, no images). It only answers requests whose `Origin`
+is in `ALLOWED_ORIGINS` (`worker/wrangler.toml`), refuses private/IP targets,
+and caches results at the edge for 6 hours. The Worker URL is not a secret.
+
+**Deploy via GitHub Actions (recommended; no tools on your machine):**
+
+1. Cloudflare dashboard → **Workers & Pages**. On first visit it asks you to pick a
+   `*.workers.dev` subdomain; do that once.
+2. Note your **Account ID** (Workers & Pages overview, right-hand column).
+3. **My Profile → API Tokens → Create Token →** template **"Edit Cloudflare Workers"**.
+   Account resources: your account. Zone resources: *All zones* (the template needs
+   something there; the Worker uses no zones). Create, then copy the token. It's shown once.
+4. GitHub repo → **Settings → Secrets and variables → Actions → New repository secret**:
+   - `CLOUDFLARE_API_TOKEN` = the token
+   - `CLOUDFLARE_ACCOUNT_ID` = the account id
+5. **Actions → "Deploy read-mode Worker" → Run workflow.** The log prints the URL,
+   e.g. `https://panel-news-reader.<subdomain>.workers.dev`.
+6. In the app: **Settings → Read mode**, paste the URL. Or commit it to
+   `web/js/config.js` so every device gets it.
+
+After that, any change under `worker/` on `main` redeploys automatically
+(tests run first).
+
+**Or deploy from your machine:** `cd worker && npm ci && npx wrangler login && npx wrangler deploy`.
+
+Using a different Pages origin (custom domain)? Update `ALLOWED_ORIGINS` in
+`worker/wrangler.toml`.
+
+Local dev: `cd worker && npm test` (extractor tests) and
+`npx wrangler dev --var DEV:1` (allows localhost origins and targets).
 
 ## Local preview
 

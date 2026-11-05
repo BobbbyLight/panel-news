@@ -27,6 +27,7 @@ import requests
 
 from .cluster import DISTANCE_THRESHOLD, cluster
 from .feeds import UA, fetch_outlet, load_panel
+from .gnews import is_gnews, resolve_all
 
 WINDOW_HOURS = 48
 LEANS = ("left", "neutral", "right")
@@ -204,7 +205,22 @@ def main(argv: list[str] | None = None) -> int:
 
     prev_pool = _load_prev(args.prev, "pool.json")
     prev_stories = _load_prev(args.prev, "stories.json")
-    pool = merge_pool(fresh, (prev_pool or {}).get("articles"), now)
+    prev_articles = (prev_pool or {}).get("articles", [])
+
+    # Swap Google News redirect links (AP/Reuters) for publisher URLs.
+    gmap = dict((prev_pool or {}).get("gnews_map", {}))
+    g_urls = [a["url"] for a in fresh + prev_articles if is_gnews(a["url"])]
+    resolved = resolve_all(g_urls, gmap) if g_urls else {}
+    for a in fresh + prev_articles:
+        if a["url"] in resolved:
+            a["url"] = resolved[a["url"]]
+    # Only ids still in the live feeds need remembering.
+    live_ids = {u.rsplit("/", 1)[-1].split("?")[0] for u in g_urls}
+    gmap = {k: v for k, v in gmap.items() if k in live_ids}
+
+    pool = merge_pool(fresh, prev_articles, now)
+    left = sum(is_gnews(a["url"]) for a in pool)
+    print(f"gnews: {len(resolved)} links resolved, {left} still unresolved in pool")
     print(f"pool: {len(fresh)} fresh + {len((prev_pool or {}).get('articles', []))} previous -> {len(pool)} in {WINDOW_HOURS}h window")
 
     t0 = time.time()
@@ -217,7 +233,7 @@ def main(argv: list[str] | None = None) -> int:
     dump = lambda name, obj: (out / name).write_text(json.dumps(obj, ensure_ascii=False, separators=(",", ":")))
     dump("stories.json", {**meta, "panel": panel_meta, "stories": stories})
     dump("feeds-health.json", {**meta, "healthy": sum(h["ok"] for h in health), "outlets": health})
-    dump("pool.json", {**meta, "articles": pool})
+    dump("pool.json", {**meta, "articles": pool, "gnews_map": gmap})
     for f in ("stories.json", "feeds-health.json", "pool.json"):
         print(f"  {f}: {(out / f).stat().st_size / 1024:.0f} KB")
     return 0

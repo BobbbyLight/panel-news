@@ -3,14 +3,14 @@
  * with the last good copy as the offline fallback. Cross-origin requests
  * (the read-mode Worker, the GitHub API) pass straight through.
  */
-const VERSION = "v1";
+const VERSION = "v2";
 const SHELL = `shell-${VERSION}`;
 const DATA = "data";
 
 const PRECACHE = [
   "./", "index.html", "manifest.json",
   "css/fonts.css", "css/tokens.css", "css/base.css", "css/app.css",
-  "js/boot.js", "js/app.js", "js/db.js", "js/theming.js", "js/data.js", "js/loaded.js",
+  "js/boot.js", "js/app.js", "js/db.js", "js/theming.js", "js/data.js", "js/loaded.js", "js/reader.js", "js/config.js",
   "fonts/atkinson-hyperlegible/atkinson-hyperlegible-latin-400-normal.woff2",
   "fonts/atkinson-hyperlegible/atkinson-hyperlegible-latin-700-normal.woff2",
   "fonts/atkinson-hyperlegible/atkinson-hyperlegible-latin-400-italic.woff2",
